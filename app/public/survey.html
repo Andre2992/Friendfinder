@@ -153,6 +153,110 @@
     <br>
 
     <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit"><i class="fa fa-check-circle" aria-hidden ="true"></i>Submit></button>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bestFriendName">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="image"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <p id=test></p>
+    
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    
+    <script>
+        var calculateDifference = function (new_friend, friend) {
+            var totalDifference = 0;
+            for (var i = 0; i < new_friend.scores.length; i++) {
+                totalDifference += Math.abs(new_friend.scores[i] - friend.scores[i]);
+            }
+            return totalDifference;
+        }
+        function resetSurvey() {
+            $('#my_select option').prop('selected', function () {
+                return this.defaultSelected;
+            });
+            $("#friend-name").val("");
+            $("#friend-photo").val("");
+        }
+        $("#modal_btn").on("click", function (event) {
+            event.preventDefault();
+            // Form validation
+            function validateForm() {
+                var isValid = true;
+                $(".form-control").each(function () {
+                    if ($(this).val() === "") {
+                        isValid = false;
+                    }
+                });
+                $(".chosen-select").each(function () {
+                    if ($(this).val() === "") {
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+            var newfriend = {
+                name: $("#friend-name").val(),
+                photo: $("#friend-photo").val().trim(),
+                scores: [
+                    parseInt($("#q1").val()),
+                    parseInt($("#q2").val()),
+                    parseInt($("#q3").val()),
+                    parseInt($("#q4").val()),
+                    parseInt($("#q5").val()),
+                    parseInt($("#q6").val()),
+                    parseInt($("#q7").val()),
+                    parseInt($("#q8").val()),
+                    parseInt($("#q9").val()),
+                    parseInt($("#q10").val()),
+                ]
+            }
+            console.log(newfriend);
+            $.get('/api/friends', function (data) {
+                var friendScore = Infinity,
+                    friendObject;
+                //TODO::Go through each friends
+                for (var i = 0; i < data.length; i++) {
+                    var b = calculateDifference(newfriend, data[i]);
+                    if (b < friendScore) {
+                        friendScore = b;
+                        friendObject = data[i];
+                    }
+                }
+                $("#bestFriendName").empty();
+                $(".image").empty();
+                $("#bestFriendName").text(friendObject.name)
+                $(".image").prepend(
+                    `<img id="friendImage" src="${friendObject.photo}" height="400" width="auto" />`
+                )
+                $('select').prop('selectedIndex', 0);
+                console.log(friendObject);
+                resetSurvey();
+            })
+            $.post("/api/friends", newfriend, function (data) {
+                if (data) {
+                }
+            });
+        });
+    </script>
+    
     <footer class="footer">
         <div class="container">
             <p>
